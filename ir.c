@@ -65,6 +65,7 @@ void IR_Send(char *dat, int len)
 	Timer0Init_4500();while(!TF0);
 	Timer0Init_4500();while(!TF0);
 	TR1 = 0;
+	P00 = 1;
 }		 
 void IR_38KEnable()
 {
