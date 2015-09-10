@@ -1,0 +1,9 @@
+*.hex
+*.uvopt
+*.bak
+*.LST
+*.OBJ
+ac.plg
+ac
+*.lnp
+ac.M51

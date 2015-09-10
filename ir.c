@@ -20,13 +20,12 @@
 	功能描述：红外遥控信号发出
 *////////////////////////////////////////////////////////////////////////////////////////
 #include<stc15.h>
+void UART_SendString(unsigned char *dat,unsigned char len);
 bit IR = 1;
 void Timer0Init_1685(void);
 void Timer0Init_4500(void);
 void Timer0Init_565(void);
 void IR_38KEnable();
-sbit PIR = P0^0;
-sbit A = P0^1;
 void IR_Send(char *dat, int len)
 {
 	int i;
@@ -78,18 +77,18 @@ void IR_38KEnable()
 	ET1 = 1;
 	EA = 1;
 }
-void Interrupt_Timer1() interrupt 5
+void Interrupt_Timer1() interrupt 3
 {
 	static char i = 0;
-	A = IR;
+	P01 = IR;
 	if(IR == 1)
 	{
-		PIR = 0;
+		P00 = 0;
 		return ;
 	}
 	else 
 	{
-		PIR = i;
+		P00 = i;
 		i = 1 - i;
 		return ;
 	}

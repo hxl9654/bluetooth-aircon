@@ -24,7 +24,7 @@
         使用该模块，请在config.h中定义XTAL常量为晶振频率（单位：兆赫兹）。
             如 #define XTAL 11.059200
 *////////////////////////////////////////////////////////////////////////////////////////
-#include<reg51.h>
+#include<stc15.h>
 #include<UART.h>
 
 #ifndef UART_BUFF_MAX
@@ -34,7 +34,6 @@
 #ifndef XTAL
 #define XTAL 11.059200
 #endif //如果没有定义晶振频率，则默认为11.0592M晶振
-sfr AUXR = 0x8E;
 extern void UART_Action(unsigned char *dat, unsigned char len);
 //此函数须另行编写：当串口完成一个字符串结束后会自动调用
 
@@ -58,17 +57,17 @@ bit UART_ResiveStringFlag;                  //串口字符串正在接收标志
 *作者：何相龙
 *日期：2014年12月9日
 *////////////////////////////////////////////////////////////////////////////////////
-void UART_Conf(unsigned int baud) //UART设置函数（buad：欲设置的波特率）
+void UART_Conf() //UART设置函数（buad：欲设置的波特率）
 {
-	AUXR &= 0xBF;		//定时器1时钟为Fosc/12,即12T
-	AUXR &= 0xFE;		//串口1选择定时器1为波特率发生器
-	TL1 = TH1 = 256 - XTAL * 1000000 / 12 / 32 / baud;    //计算定时器初值
+	SCON = 0x50;		//8λ����,�ɱ䲨����
+	AUXR |= 0x01;		//����1ѡ��ʱ��2Ϊ�����ʷ�����
+	AUXR |= 0x04;		//��ʱ��2ʱ��ΪFosc,��1T
+	T2L = 0xE0;		//�趨��ʱ��ֵ
+	T2H = 0xFE;		//�趨��ʱ��ֵ
+	AUXR |= 0x10;		//������ʱ��2
 	EA = 1;         //使能总中断
 	ES = 1;         //使能串口中断
-	TMOD &= 0X0F;   //配置定时器1为自动重装模式
-	TMOD |= 0X20;
 	SCON = 0X50;    //配置串口工作模式
-	TR1 = 1;        //使能定时器1
 }
 /*///////////////////////////////////////////////////////////////////////////////////
 *函数名：UART_SendString

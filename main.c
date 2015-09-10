@@ -1,12 +1,16 @@
 #include<stc15.h>
+#include<UART.h>
 void IR_Send(char *dat, int len);
-
+void Timer3Init();
 char statu[35] = {0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,1,0};
+unsigned char temp = 0;
 int main()
 {
+	Timer3Init();
+	UART_Conf();
 	while(1)
 	{
-
+		UART_Driver();	
 	}
 }
 void UART_Action(unsigned char *dat, unsigned char len)
@@ -148,13 +152,13 @@ void UART_Action(unsigned char *dat, unsigned char len)
 				if(dat[2] >= '0' && dat[2] <= '9')
 				{
 					temp = (dat[1] - '0') * 10 + dat[2] - '0';
-					if(temp >= 16 && temp <=30)
+					if(temp >= 16 && temp <= 30)
 					{
 						temp -= 16;
 						statu[8] = temp & 0x01;
-						statu[9] = temp & 0x02;
-						statu[10] = temp & 0x04;
-						statu[11] = temp & 0x08;
+						statu[9] = (temp & 0x02) >> 1;
+						statu[10] = (temp & 0x04) >> 2;
+						statu[11] = (temp & 0x08) >> 3;
 					}
 				}
 		}
@@ -176,15 +180,15 @@ void UART_Action(unsigned char *dat, unsigned char len)
 				statu[13] = 1;
 			else if(dat[1] == '2')
 				statu[14] = 1;
-			if(dat[3] == 5)
+			if(dat[3] == '5')
 				statu[12] = 1;
 			if(dat[2] >= '0' && dat[2] <= '9')
 			{
 				temp = dat[2] - '0';
-				statu[13] = temp & 0x01;
-				statu[14] = temp & 0x02;
-				statu[15] = temp & 0x04;
-				statu[16] = temp & 0x08;
+				statu[16] = temp & 0x01;
+				statu[17] = (temp & 0x02) >> 1;
+				statu[18] = (temp & 0x04) >> 2;
+				statu[19] = (temp & 0x08) >> 3;
 			}
 			if(dat[1] != '0' || dat[2] != '0' || dat[3] != '0')
 				statu[15] = 1;
@@ -193,3 +197,17 @@ void UART_Action(unsigned char *dat, unsigned char len)
 	}
 	IR_Send(statu, 35);
 }
+void Timer3Init(void)		//5毫秒@11.0592MHz
+{
+	T4T3M |= 0x02;		//定时器时钟1T模式
+	T3L = 0x00;		//设置定时初值
+	T3H = 0x28;		//设置定时初值
+	T4T3M |= 0x08;		//定时器3开始计时
+	IE2 |= 0x20;
+	EA = 1;
+}
+void Interrupt_Timer3() interrupt 19
+{
+	UART_RxMonitor(5);
+}
+
